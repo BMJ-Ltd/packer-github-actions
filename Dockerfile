@@ -1,9 +1,33 @@
 # see https://hub.docker.com/r/hashicorp/packer/tags for all available tags
 FROM hashicorp/packer:light@sha256:f795aace438ef92e738228c21d5ceb7d5dd73ceb7e0b1efab5b0e90cbc4d4dcd
 
-RUN apt-get install -y ansible
-RUN apt-get install -y curl
-RUN apt-get install -y zip
+RUN apk --update --no-cache add \
+    ca-certificates \
+    git \
+    openssh-client \
+    openssl \
+    python3\
+    py3-pip \
+    py3-cryptography \
+    rsync \
+    sshpass
+
+RUN apk --update add --virtual \
+    .build-deps \
+    python3-dev \
+    libffi-dev \
+    openssl-dev \
+    build-base \
+    curl \
+    && pip3 install --upgrade \
+    pip \
+    cffi \
+    && pip3 install \
+    ansible \
+    ansible-lint \
+    && apk del \
+    .build-deps \
+    && rm -rf /var/cache/apk/*
 
 COPY "entrypoint.sh" "/entrypoint.sh"
 
