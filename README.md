@@ -22,47 +22,52 @@ Add the Action to your [GitHub Workflow](https://docs.github.com/en/actions/lear
 
 ```yaml
 ---
-
 name: Packer
 
 on:
   push:
 
+env:
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  AWS_DEFAULT_REGION: eu-west-1
+
 jobs:
   packer:
-    runs-on: ubuntu-latest
+    runs-on: k8s-runner
     name: packer
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      # fix backwards incompatibilities in template
-      - name: Fix Template
-        uses: hashicorp/packer-github-actions@master
-        with:
-          command: fix
-
       # validate templates
       - name: Validate Template
-        uses: hashicorp/packer-github-actions@master
+        uses: bmj-ltd/packer-github-actions@master
+
         with:
           command: validate
           arguments: -syntax-only
-          target: packer.pkr.hcl
+          target: ubuntu.pkr.hcl
+
+      # init templates
+      - name: init Template
+        uses: bmj-ltd/packer-github-actions@master
+        with:
+          command: init
+          target: ubuntu.pkr.hcl
 
       # build artifact
       - name: Build Artifact
-        uses: hashicorp/packer-github-actions@master
+        uses: bmj-ltd/packer-github-actions@master
         with:
           command: build
-          arguments: "-color=false -on-error=abort"
-          target: packer.pkr.hcl
+          arguments: "-color=true -on-error=abort"
+          target: ubuntu.pkr.hcl
         env:
           PACKER_LOG: 1
           HCP_CLIENT_ID: ${{ secrets.HCP_CLIENT_ID }}
           HCP_CLIENT_SECRET: ${{ secrets.HCP_CLIENT_SECRET }}
-
       # additional steps to process artifacts
 ```
 
