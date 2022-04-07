@@ -29,6 +29,9 @@ RUN apk --update add --virtual \
     .build-deps \
     && rm -rf /var/cache/apk/*
 
+RUN mkdir -p /etc/ansible \
+    && echo 'localhost' > /etc/ansible/hosts 
+
 COPY "entrypoint.sh" "/entrypoint.sh"
 
 ENTRYPOINT ["/entrypoint.sh"]
